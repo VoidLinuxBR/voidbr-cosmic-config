@@ -1,7 +1,7 @@
 # Maintainer: Vilmar Catafesta <vcatafesta@gmail.com>
 
-pkgname=voidbr-pkgname
-pkgdesc="Package template for VoidBR"
+pkgname=voidbr-cosmic-config
+pkgdesc="Skel config for Void Linux COSMIC Meta Package"
 pkgver=$(date +%Y%m%d)
 pkgrel=$(date +%H%M)
 provides=()  # "eu SOU o $pkgname pkg1, pra quem depender deles"
@@ -14,8 +14,12 @@ url="https://github.com/voidlinuxbr/${pkgname}"
 source=("git+${url}.git")
 md5sums=('SKIP')
 makedepends=()
-depends=()
-backup=()
+depends=(
+	voidbr-wallpapers # /usr/share/backgrounds/voidbr/voidbr-wallpaper.avif
+)
+backup=(
+	/etc/sddm.conf.d/wayland.conf
+)
 
 # Automatically detect and use the correct install file
 if [ -e "${pkgname}.install" ]; then
@@ -62,15 +66,17 @@ post_install() {
 		log "Finalizando instalação"
 	fi
 
+	mkdir -p /etc/sddm.conf.d/
+	tee /etc/sddm.conf.d/wayland.conf >/dev/null <<'EOT'
+[General]
+#CompositorCommand=weston --shell=kiosk
+DisplayServer=wayland
+EOT
+
 	if [ -n "${MKISO_BUILD:-}" ]; then
 		echo "${YELLOW}[-]${RESET} Build de ISO detectado (MKISO_BUILD) — pulando."
 		return 0
 	fi
-
-	if [ -z "${VOIDBR_INSTALLER:-}" ]; then
-		:
-	fi
-
 }
 
 pre_upgrade() {
